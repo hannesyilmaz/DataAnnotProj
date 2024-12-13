@@ -17,12 +17,15 @@ import streamlit as st
 
 
 # Ensure NLTK data is downloaded
-nltk_packages = ['stopwords', 'punkt']
-for package in nltk_packages:
-    try:
-        nltk.data.find(f'tokenizers/{package}')
-    except LookupError:
-        nltk.download(package)
+import os
+
+# Set a specific NLTK data path
+nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
+nltk.data.path.append(nltk_data_path)
+
+# Download necessary data
+nltk.download('punkt', download_dir=nltk_data_path)
+nltk.download('stopwords', download_dir=nltk_data_path)
 
 
 
@@ -47,7 +50,8 @@ if uploaded_file:
     categories = list(data_raw.columns.values)
     categories = categories[2:]  # Adjust based on your dataset structure
 
-    data_raw['Heading'] = data_raw['Heading'].str.lower().str.replace('[^\w\s]', '').str.replace('\d+', '').str.replace('<.*?>', '')
+    data_raw['Heading'] = data_raw['Heading'].str.lower().str.replace(r'[^\w\s]', '').str.replace(r'\d+', '').str.replace(r'<.*?>', '')
+
 
 
     stop_words = set(stopwords.words('swedish'))
