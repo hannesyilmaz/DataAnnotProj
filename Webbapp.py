@@ -15,6 +15,17 @@ from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 import streamlit as st
 
+
+# Ensure NLTK data is downloaded
+nltk_packages = ['stopwords', 'punkt']
+for package in nltk_packages:
+    try:
+        nltk.data.find(f'tokenizers/{package}')
+    except LookupError:
+        nltk.download(package)
+
+
+
 # Suppress warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
@@ -38,7 +49,7 @@ if uploaded_file:
 
     data_raw['Heading'] = data_raw['Heading'].str.lower().str.replace('[^\w\s]', '').str.replace('\d+', '').str.replace('<.*?>', '')
 
-    nltk.download('stopwords')
+
     stop_words = set(stopwords.words('swedish'))
 
     def removeStopWords(sentence):
