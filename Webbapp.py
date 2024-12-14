@@ -19,13 +19,19 @@ import streamlit as st
 # Ensure NLTK data is downloaded
 import os
 
-# Set a specific NLTK data path
+# Set the NLTK data directory
 nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
 nltk.data.path.append(nltk_data_path)
 
-# Download necessary data
+# Download required resources
 nltk.download('punkt', download_dir=nltk_data_path)
 nltk.download('stopwords', download_dir=nltk_data_path)
+
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', download_dir=nltk_data_path)
 
 
 
@@ -56,8 +62,11 @@ if uploaded_file:
 
     stop_words = set(stopwords.words('swedish'))
 
+    from nltk.tokenize import word_tokenize
+
     def removeStopWords(sentence):
-        return " ".join([word for word in nltk.word_tokenize(sentence) if word not in stop_words])
+        return " ".join([word for word in word_tokenize(sentence, language='swedish') if word not in stop_words])
+
 
     data_raw['Heading'] = data_raw['Heading'].apply(removeStopWords)
 
