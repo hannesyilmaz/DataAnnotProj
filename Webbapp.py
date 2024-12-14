@@ -15,22 +15,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 import streamlit as st
 
-# Ensure NLTK data is downloaded
-import os
-
-# Set the NLTK data directory
-nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
-nltk.data.path.append(nltk_data_path)
-
-# Download required resources
-nltk.download('punkt', download_dir=nltk_data_path)
-nltk.download('stopwords', download_dir=nltk_data_path)
-
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt', download_dir=nltk_data_path)
-
 # Suppress warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
@@ -52,18 +36,29 @@ if uploaded_file:
     categories = list(data_raw.columns.values)
     categories = categories[2:]  # Adjust based on your dataset structure
 
-    data_raw['Heading'] = data_raw['Heading'].str.lower().str.replace(r'[^\w\s]', '', regex=True).str.replace(r'\d+', '', regex=True).str.replace(r'<.*?>', '', regex=True)
+    # Preprocess the text
+    data_raw['Heading'] = (
+        data_raw['Heading']
+        .str.lower()
+        .str.replace(r'[^\w\s]', '', regex=True)
+        .str.replace(r'\d+', '', regex=True)
+        .str.replace(r'<.*?>', '', regex=True)
+    )
 
-    # Load stopwords for Swedish
+    # Define stopwords
     stop_words = set(stopwords.words('swedish'))
 
-    from nltk.tokenize import word_tokenize
+    # Simple tokenizer
+    def simple_tokenize(sentence):
+        return re.findall(r'\b\w+\b', sentence.lower())
 
+    # Stopword removal
     def removeStopWords(sentence):
-        return " ".join([word for word in word_tokenize(sentence, language='swedish') if word not in stop_words])
+        return " ".join([word for word in simple_tokenize(sentence) if word not in stop_words])
 
     data_raw['Heading'] = data_raw['Heading'].apply(removeStopWords)
 
+    # Stemming
     stemmer = SnowballStemmer("swedish")
 
     def stemming(sentence):
@@ -75,7 +70,7 @@ if uploaded_file:
         stemSentence = stemSentence.strip()
         return stemSentence
 
-    # Apply stemming to the Heading column
+    # Apply stemming
     data_raw['Heading'] = data_raw['Heading'].apply(stemming)
 
     # Splitting data
