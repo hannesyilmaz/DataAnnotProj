@@ -15,7 +15,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 import streamlit as st
 
-
 # Ensure NLTK data is downloaded
 import os
 
@@ -27,13 +26,10 @@ nltk.data.path.append(nltk_data_path)
 nltk.download('punkt', download_dir=nltk_data_path)
 nltk.download('stopwords', download_dir=nltk_data_path)
 
-
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
     nltk.download('punkt', download_dir=nltk_data_path)
-
-
 
 # Suppress warnings
 if not sys.warnoptions:
@@ -56,17 +52,15 @@ if uploaded_file:
     categories = list(data_raw.columns.values)
     categories = categories[2:]  # Adjust based on your dataset structure
 
-    data_raw['Heading'] = data_raw['Heading'].str.lower().str.replace(r'[^\w\s]', '').str.replace(r'\d+', '').str.replace(r'<.*?>', '')
+    data_raw['Heading'] = data_raw['Heading'].str.lower().str.replace(r'[^\w\s]', '', regex=True).str.replace(r'\d+', '', regex=True).str.replace(r'<.*?>', '', regex=True)
 
-
-
+    # Load stopwords for Swedish
     stop_words = set(stopwords.words('swedish'))
 
     from nltk.tokenize import word_tokenize
 
     def removeStopWords(sentence):
         return " ".join([word for word in word_tokenize(sentence, language='swedish') if word not in stop_words])
-
 
     data_raw['Heading'] = data_raw['Heading'].apply(removeStopWords)
 
@@ -80,6 +74,9 @@ if uploaded_file:
             stemSentence += " "
         stemSentence = stemSentence.strip()
         return stemSentence
+
+    # Apply stemming to the Heading column
+    data_raw['Heading'] = data_raw['Heading'].apply(stemming)
 
     # Splitting data
     train, test = train_test_split(data_raw, random_state=42, test_size=0.30, shuffle=True)
